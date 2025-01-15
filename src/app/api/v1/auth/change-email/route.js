@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import prisma from '@/server/prisma';
 import { hobbyData, myData } from '@/server/helpers';
-import { getUserId } from '@/server/middleware/auth';
+import { getUserId } from '@/server/auth';
 
 const msg =
   "The email you're trying to use is associated with another account!";

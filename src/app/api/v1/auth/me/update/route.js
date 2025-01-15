@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import prisma from '@/server/prisma';
-import { myData } from '@/server/helpers';
-import { getUserId } from '@/server/middleware/auth';
+import { omit } from '@/server/helpers';
+import { getUserId } from '@/server/auth';
 
 export async function POST(req) {
   const { myId } = getUserId();
@@ -22,11 +22,11 @@ export async function POST(req) {
     const userData = await prisma.user.update({
       where: { id: myId },
       data,
-      select: myData,
+      omit,
     });
 
     return NextResponse.json({
-      userData: { ...userData, ...userData.meta },
+      userData,
       api_response: 'Your request has been processed successfully!',
     });
   } catch (err) {

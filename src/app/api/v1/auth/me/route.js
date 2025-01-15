@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { nanoid } from 'nanoid';
 
 import prisma from '@/server/prisma';
-import { calc_discount, myData } from '@/server/helpers';
-import { getUserId } from '@/server/middleware/auth';
-import { getBundle } from '@/server/utils/bundle';
+import { omit } from '@/server/helpers';
+import { getUserId } from '@/server/auth';
 
 export async function GET() {
   const { myId } = getUserId();
@@ -13,40 +11,19 @@ export async function GET() {
     return NextResponse.json({ msg: 'Invalid credentials!' }, { status: 401 });
   }
 
-  const device_id = nanoid();
-
   try {
-    const getMe = prisma.user.update({
+    const getMe = prisma.user.findUnique({
       where: { id: myId },
-      data: { device_id },
-      select: myData,
+      omit,
     });
 
     const getConfig = prisma.config.findUnique({
       where: { id: 'config' },
     });
 
-    const [me, bundles, config] = await prisma.$transaction([
-      getMe,
-      getBundle(prisma),
-      getConfig,
-    ]);
+    const [me, config] = await prisma.$transaction([getMe, getConfig]);
 
-    const discount = ['Reseller', 'API'];
-
-    const { role } = me;
-
-    if (discount.includes(role)) {
-      calc_discount({ role, bundles });
-    }
-
-    delete me.meta.id;
-
-    return NextResponse.json({
-      bundles,
-      config,
-      me: { ...me, ...me.meta },
-    });
+    return NextResponse.json({ config, me });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error!' }, { status: 500 });
