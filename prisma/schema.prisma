@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id                Int           @id @default(autoincrement())
+  phone             String        @unique
+  name              String
+  avatar            String?
+  email             String        @unique
+  nuban             String?       @unique
+  balance           Float         @default(0)
+  is_email_verified Boolean       @default(false)
+  passcode          String        @default("")
+  nin               String?       @unique
+  is_nin_verified   Boolean       @default(false)
+  is_verified       String        @default("false")
+  device            String?
+  pushToken         String?
+  referred_by       String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  transactions      Transaction[]
+  role              Role          @default(User)
+  send_push         Boolean       @default(true)
+  send_sms          Boolean       @default(false)
+
+  bank        Json?
+  next_of_kin Json?
+}
+
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  status     String
+  channel    String?
+  type       String
+  service    String?
+  refrence   String?  @unique
+  amount     Float
+  note       String?
+  created_at DateTime @default(now())
+  device     String?
+
+  @@index([user_id])
+}
+
+/**
+ * model Stat {
+ * id                      String @id @default("stat")
+ * total_balance           Float  @default(0)
+ * total_deposit           Float  @default(0)
+ * total_withdraw          Float  @default(0)
+ * total_transactions      Int    @default(0)
+ * successful_transactions Int    @default(0)
+ * failed_transactions     Int    @default(0)
+ * total_users             Int    @default(0)
+ * }
+ */
+
+model Config {
+  id                 String   @id @default("config")
+  notification       String?  @db.VarChar(300)
+  app_version        String?  @default("1.0.4")
+  force_upgrade      String?  @default("false")
+  phone              String?
+  support_mail       String?
+  allow_transactions String?  @default("true")
+  updated_at         DateTime @updatedAt
+}
+
+model Otp {
+  is_valid   Boolean  @default(true)
+  updated_at DateTime @updatedAt
+  user_email String   @unique
+  code       Int
+}
+
+enum Role {
+  User
+  Admin
+  MODERATOR
+  BLOCKED
+  DELETED
+}
