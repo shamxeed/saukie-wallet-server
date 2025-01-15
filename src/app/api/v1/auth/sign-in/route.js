@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { nanoid } from 'nanoid';
 
 import prisma from '@/server/prisma';
-import { myData } from '@/server/helpers';
+import { omit } from '@/server/helpers';
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
+    const { phone, passcode } = await req.json();
 
-    const user = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive',
-        },
-      },
-    });
+    const user = await prisma.user.findUnique({ where: { phone } });
 
     if (!user) {
       return NextResponse.json(
@@ -44,7 +36,7 @@ export async function POST(req) {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(passcode, user.passcode);
 
     if (!isMatch) {
       return NextResponse.json(
@@ -53,12 +45,9 @@ export async function POST(req) {
       );
     }
 
-    const device_id = nanoid();
-
-    const updateMe = prisma.user.update({
-      data: { device_id },
-      where: { email: user.email },
-      select: myData,
+    const updateMe = prisma.user.findUnique({
+      where: { phone },
+      omit,
     });
 
     const getConfig = prisma.config.findUnique({
@@ -71,15 +60,7 @@ export async function POST(req) {
 
     const token = jwt.sign({ userId: me.id }, SECRET_KEY);
 
-    me.device_id = device_id;
-
-    delete me.meta.id;
-
-    return NextResponse.json({
-      token,
-      config,
-      user,
-    });
+    return NextResponse.json({ token, config, user });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error!' }, { status: 500 });

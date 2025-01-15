@@ -8,11 +8,11 @@ const api_response =
 
 export async function POST(req) {
   try {
-    const { email, password } = await req.json();
+    const { email, passcode } = await req.json();
 
     const user = await prisma.user.findFirst({
       where: { email },
-      select: { password: true },
+      select: { passcode: true },
     });
 
     if (!user) {
@@ -22,7 +22,7 @@ export async function POST(req) {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(passcode, user.passcode);
 
     if (!isMatch) {
       return NextResponse.json(
@@ -33,14 +33,10 @@ export async function POST(req) {
 
     await prisma.user.update({
       where: { email },
-      data: {
-        role: 'DELETED',
-      },
+      data: { role: 'DELETED' },
     });
 
-    return NextResponse.json({
-      api_response,
-    });
+    return NextResponse.json({ api_response });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error!' }, { status: 500 });

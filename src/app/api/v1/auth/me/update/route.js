@@ -9,7 +9,7 @@ export async function POST(req) {
 
   const body = await req.json();
 
-  const { password, role, balance, ...data } = body;
+  const { passcode, role, balance, ...data } = body;
 
   try {
     if (!myId) {

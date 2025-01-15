@@ -21,9 +21,21 @@ export async function GET() {
       where: { id: 'config' },
     });
 
-    const [me, config] = await prisma.$transaction([getMe, getConfig]);
+    const getTransactions = prisma.transaction.findMany({
+      where: { user_id: myId },
+      orderBy: {
+        created_at: 'desc',
+      },
+      take: 5,
+    });
 
-    return NextResponse.json({ config, me });
+    const [me, config, transactions] = await prisma.$transaction([
+      getMe,
+      getConfig,
+      getTransactions,
+    ]);
+
+    return NextResponse.json({ me, config, transactions });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error!' }, { status: 500 });

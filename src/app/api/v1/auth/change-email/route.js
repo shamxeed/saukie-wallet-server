@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import prisma from '@/server/prisma';
-import { hobbyData, myData } from '@/server/helpers';
+import { omit } from '@/server/helpers';
 import { getUserId } from '@/server/auth';
 
 const msg =
@@ -11,7 +11,7 @@ export async function POST(req) {
   try {
     const { myId } = getUserId();
 
-    const { email, isHobby } = await req.json();
+    const { email } = await req.json();
 
     if (!myId) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(req) {
         email,
         is_email_verified: false,
       },
-      select: isHobby ? hobbyData : myData,
+      omit,
     });
 
     return NextResponse.json({
