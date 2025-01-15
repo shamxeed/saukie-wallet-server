@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import dayjs from 'dayjs';
 
 import prisma from '@/server/prisma';
-import { hobbyData } from '@/server/helpers';
+import { omit } from '@/server/helpers';
 
 export async function POST(req) {
   const body = await req.json();
 
-  const { email, code, isHobby } = body;
+  const { email, code } = body;
 
   try {
     const otp = await prisma.otp.findFirst({
@@ -44,7 +44,7 @@ export async function POST(req) {
     const updateUser = prisma.user.update({
       where: { email },
       data: { is_email_verified: true },
-      select: isHobby ? hobbyData : { is_email_verified: true },
+      omit,
     });
 
     const invalidateCode = prisma.otp.update({

@@ -3,37 +3,31 @@ import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
 import { hashPasscode } from '@/server/hashPasscode';
-import { hobbyData, myData } from '@/server/helpers';
+import { omit } from '@/server/helpers';
 
 export async function POST(request) {
   const body = await request.json();
 
-  const { email, new_password, old_password, isHobby } = body;
+  const { email, new_passcode, old_passcode } = body;
 
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
-      select: {
-        password: true,
-      },
+      where: { email },
+      select: { passcode: true },
     });
 
-    const isMatch = await bcrypt.compare(old_password, user.password);
+    const isMatch = await bcrypt.compare(old_passcode, user.passcode);
 
     if (!isMatch) {
-      return NextResponse.json({ msg: 'Wrong Password!' }, { status: 401 });
+      return NextResponse.json({ msg: 'Wrong Passcode!' }, { status: 401 });
     }
 
-    const password = await hashPasscode(new_password);
+    const passcode = await hashPasscode(new_passcode);
 
     const userData = await prisma.user.update({
       where: { email },
-      data: {
-        password,
-      },
-      select: isHobby ? hobbyData : myData,
+      data: { passcode },
+      omit,
     });
 
     return NextResponse.json({
