@@ -4,8 +4,7 @@ import bcrypt from 'bcryptjs';
 import { nanoid } from 'nanoid';
 
 import prisma from '@/server/prisma';
-import { calc_discount, myData } from '@/server/helpers';
-import { getBundle } from '@/server/utils/bundle';
+import { myData } from '@/server/helpers';
 
 export async function POST(req) {
   try {
@@ -66,19 +65,7 @@ export async function POST(req) {
       where: { id: 'config' },
     });
 
-    const [me, bundles, config] = await prisma.$transaction([
-      updateMe,
-      getBundle(prisma),
-      getConfig,
-    ]);
-
-    const discount = ['Reseller', 'API'];
-
-    const { role } = me;
-
-    if (discount.includes(role)) {
-      calc_discount({ role, bundles });
-    }
+    const [me, config] = await prisma.$transaction([updateMe, getConfig]);
 
     const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -90,9 +77,8 @@ export async function POST(req) {
 
     return NextResponse.json({
       token,
-      bundles,
       config,
-      user: { ...me, ...me?.meta },
+      user,
     });
   } catch (err) {
     console.log(err.message);
