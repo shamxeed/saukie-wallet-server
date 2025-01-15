@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
-import { hashPassword } from '@/server/hashPassword';
+import { hashPasscode } from '@/server/hashPasscode';
 import { hobbyData, myData } from '@/server/helpers';
 
 export async function POST(request) {
@@ -26,7 +26,7 @@ export async function POST(request) {
       return NextResponse.json({ msg: 'Wrong Password!' }, { status: 401 });
     }
 
-    const password = await hashPassword(new_password);
+    const password = await hashPasscode(new_password);
 
     const userData = await prisma.user.update({
       where: { email },
