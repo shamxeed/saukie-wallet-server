@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
 import { omit } from '@/server/helpers';
