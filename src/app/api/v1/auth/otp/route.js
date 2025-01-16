@@ -6,7 +6,7 @@ import * as mailer from '@/server/mailer';
 export async function POST(req) {
   const body = await req.json();
 
-  const { email, isPassword, isHobby } = body;
+  const { email, isPassword } = body;
 
   try {
     const code = Math.floor(Math.random() * 1000000);
@@ -29,7 +29,7 @@ export async function POST(req) {
     const mailOption = {
       html,
       to: email,
-      from: isHobby ? mailer.hobbySender : mailer.sender,
+      from: mailer.sender,
       subject: isPassword ? 'Password Reset' : 'Confirm Your Email Address',
     };
 
