@@ -1,19 +1,16 @@
-import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 
 import prisma from '@/server/prisma';
-import { hashPasscode } from '@/server/hashPasscode';
+import { encrypt, signJWT } from '@/server/encryption';
 
 const emailErr =
   "The email you're trying to use is associated with another account!";
 
 const phoneErr = 'This phone number has already been taken use another!';
 
-const SECRET_KEY = process.env.SECRET_KEY;
-
 export async function POST(req) {
   const body = await req.json();
-  console.log(body);
+
   const { email, phone, passcode: pass } = body;
 
   try {
@@ -44,7 +41,7 @@ export async function POST(req) {
       }
     }
 
-    const passcode = await hashPasscode(pass);
+    const passcode = await encrypt({ data: { passcode: pass } });
 
     const createUser = prisma.user.create({
       data: {
@@ -63,7 +60,7 @@ export async function POST(req) {
 
     const [user, config] = await prisma.$transaction([createUser, getConfig]);
 
-    const token = jwt.sign({ userId: user?.id }, SECRET_KEY);
+    const token = await signJWT({ data: { userId: user?.id } });
 
     return NextResponse.json({ token, config, user });
   } catch (err) {

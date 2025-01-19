@@ -1,27 +1,3 @@
-/* const jwt = require('jsonwebtoken');
-import { headers } from 'next/headers'; */
-
-/* export const getUserId = () => {
-  const token = headers().get('x-auth-token');
-
-  if (!token) return {};
-
-  try {
-    const SECRET_KEY = process.env.SECRET_KEY;
-
-    jwt.verify(token, 'musa'.toString('utf-8'));
-
-    const decoded = {};
-
-    return { myId: decoded.userId };
-  } catch (err) {
-    console.log(err.message);
-    if (!token) {
-      return {};
-    }
-  }
-}; */
-
 export const authorization = async (data) => {
   const { prismaEdge, body, query, is_data, select = {} } = data;
 
@@ -129,69 +105,6 @@ export const authorization = async (data) => {
     ...response,
     config,
     queryData,
-    user,
-    myId,
-    error: false,
-  };
-};
-
-export const isAdmin = async (data) => {
-  const { prismaEdge, body, query, isUser, select = {} } = data;
-
-  const { pin, myId } = body;
-
-  const response = {
-    myId,
-    error: true,
-    statusCode: 401,
-    msg: 'Unauthorized request!',
-  };
-
-  if (!myId) {
-    return response;
-  }
-
-  const getUser = prismaEdge.user.findUnique({
-    where: { id: myId },
-    select: {
-      role: true,
-      transaction_pin: true,
-      ...select,
-    },
-  });
-
-  const options = [getUser];
-
-  if (query) {
-    options.push(query);
-  }
-
-  const [user, queryRes] = await prismaEdge.$transaction(options);
-
-  const { transaction_pin, role } = user || {};
-
-  if (role !== 'Admin') {
-    return response;
-  }
-
-  if (pin !== transaction_pin) {
-    return {
-      ...response,
-      msg: 'Incorrect transaction pin!',
-    };
-  }
-
-  if (isUser && !queryRes) {
-    return {
-      ...response,
-      msg: 'No User Found',
-      statusCode: 400,
-    };
-  }
-
-  return {
-    ...response,
-    queryRes,
     user,
     myId,
     error: false,

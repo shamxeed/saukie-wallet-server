@@ -1,38 +1,29 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
 import { omit } from '@/server/helpers';
 import { getUserId } from '@/server/auth';
+import { decrypt } from '@/server/encryption';
 
 export async function POST(req) {
-  const { myId } = getUserId();
-
   const body = await req.json();
 
   const { passcode, role, balance, ...data } = body;
 
   try {
-    if (!myId) {
-      return NextResponse.json(
-        { msg: 'Oops! Unauthorized request!!' },
-        { status: 401 }
-      );
-    }
+    const { myId } = getUserId();
 
     const user = await prisma.user.findUnique({
       where: { id: myId },
       select: { passcode: true },
     });
 
-    const isMatch = await bcrypt.compare(passcode, user.passcode);
+    const payload = await decrypt({ token: user.passcode });
 
-    if (!isMatch) {
-      return NextResponse.json(
-        { msg: 'Invalid login cridentials!' },
-        { status: 401 }
-      );
+    if (payload.passcode !== passcode) {
+      return NextResponse.json({ msg: 'Wrong passcode!' }, { status: 401 });
     }
+
     const userData = await prisma.user.update({
       where: { id: myId },
       data,

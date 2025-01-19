@@ -5,18 +5,15 @@ import { omit } from '@/server/helpers';
 import { getUserId } from '@/server/auth';
 
 export async function POST(req) {
-  const { myId } = getUserId();
-
   const body = await req.json();
 
   const { passcode, role, balance, ...data } = body;
 
   try {
-    if (!myId) {
-      return NextResponse.json(
-        { msg: 'Invalid credentials!' },
-        { status: 401 }
-      );
+    const { myId, error } = await getUserId();
+
+    if (error) {
+      return NextResponse.json(error[0], error[1]);
     }
 
     const userData = await prisma.user.update({

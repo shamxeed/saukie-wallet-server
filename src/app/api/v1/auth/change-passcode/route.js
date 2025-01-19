@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
-import { hashPasscode } from '@/server/hashPasscode';
 import { omit } from '@/server/helpers';
+import { decrypt, encrypt } from '@/server/encryption';
 
 export async function POST(request) {
   const body = await request.json();
@@ -16,13 +15,15 @@ export async function POST(request) {
       select: { passcode: true },
     });
 
-    const isMatch = await bcrypt.compare(old_passcode, user.passcode);
+    const payload = await decrypt({ token: user.passcode });
+
+    const isMatch = payload.passcode === old_passcode;
 
     if (!isMatch) {
       return NextResponse.json({ msg: 'Wrong Passcode!' }, { status: 401 });
     }
 
-    const passcode = await hashPasscode(new_passcode);
+    const passcode = await encrypt({ data: { passcode: new_passcode } });
 
     const userData = await prisma.user.update({
       where: { email },

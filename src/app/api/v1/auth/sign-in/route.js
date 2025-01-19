@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
 import { omit } from '@/server/helpers';
+import { decrypt, signJWT } from '@/server/encryption';
 
 export async function POST(req) {
   try {
@@ -36,9 +35,9 @@ export async function POST(req) {
       );
     }
 
-    const isMatch = await bcrypt.compare(passcode, user.passcode);
+    const payload = await decrypt({ token: user.passcode });
 
-    if (!isMatch) {
+    if (payload.passcode !== passcode) {
       return NextResponse.json(
         { msg: 'Invalid login cridentials!' },
         { status: 401 }
@@ -46,8 +45,8 @@ export async function POST(req) {
     }
 
     const updateMe = prisma.user.findUnique({
-      where: { phone },
       omit,
+      where: { phone },
     });
 
     const getConfig = prisma.config.findUnique({
@@ -56,9 +55,7 @@ export async function POST(req) {
 
     const [me, config] = await prisma.$transaction([updateMe, getConfig]);
 
-    const SECRET_KEY = process.env.SECRET_KEY;
-
-    const token = jwt.sign({ userId: me.id }, SECRET_KEY);
+    const token = await signJWT({ data: { userId: me.id } });
 
     return NextResponse.json({ token, config, user });
   } catch (err) {

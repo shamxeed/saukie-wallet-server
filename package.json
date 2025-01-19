@@ -12,10 +12,9 @@
   "dependencies": {
     "@prisma/client": "^6.2.1",
     "@prisma/extension-accelerate": "^1.2.1",
-    "bcryptjs": "^2.4.3",
     "dayjs": "^1.11.13",
     "expo-server-sdk": "^3.13.0",
-    "jsonwebtoken": "^9.0.2",
+    "jose": "^5.9.6",
     "nanoid": "^5.0.9",
     "next": "15.1.4",
     "nodemailer": "^6.9.16",

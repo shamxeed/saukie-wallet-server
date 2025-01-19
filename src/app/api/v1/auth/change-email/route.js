@@ -9,15 +9,12 @@ const msg =
 
 export async function POST(req) {
   try {
-    const { myId } = getUserId();
-
     const { email } = await req.json();
 
-    if (!myId) {
-      return NextResponse.json(
-        { msg: 'Invalid credentials!' },
-        { status: 401 }
-      );
+    const { myId, error } = await getUserId();
+
+    if (error) {
+      return NextResponse.json(error[0], error[1]);
     }
 
     const user = await prisma.user.findFirst({

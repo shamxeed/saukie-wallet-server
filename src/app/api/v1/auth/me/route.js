@@ -5,16 +5,16 @@ import { omit } from '@/server/helpers';
 import { getUserId } from '@/server/auth';
 
 export async function GET() {
-  const { myId } = getUserId();
-
-  if (!myId) {
-    return NextResponse.json({ msg: 'Invalid credentials!' }, { status: 401 });
-  }
-
   try {
+    const { myId, error } = await getUserId();
+
+    if (error) {
+      return NextResponse.json(error[0], error[1]);
+    }
+
     const getMe = prisma.user.findUnique({
-      where: { id: myId },
       omit,
+      where: { id: myId },
     });
 
     const getConfig = prisma.config.findUnique({
@@ -22,11 +22,9 @@ export async function GET() {
     });
 
     const getTransactions = prisma.transaction.findMany({
-      where: { user_id: myId },
-      orderBy: {
-        created_at: 'desc',
-      },
       take: 5,
+      where: { user_id: myId },
+      orderBy: { created_at: 'desc' },
     });
 
     const [me, config, transactions] = await prisma.$transaction([

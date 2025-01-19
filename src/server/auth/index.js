@@ -1,22 +1,5 @@
-import jwt from 'jsonwebtoken';
-import { headers } from 'next/headers';
-
-export const getUserId = () => {
-  const token = headers().get('x-auth-token');
-
-  if (!token) return {};
-
-  try {
-    const SECRET_KEY = process.env.SECRET_KEY;
-
-    const decoded = jwt.verify(token, SECRET_KEY);
-
-    return { myId: decoded.userId };
-  } catch (err) {
-    console.log(err.message);
-    return {};
-  }
-};
+export { getUserId } from './userId';
+export { isAdmin } from './isAdmin';
 
 export const authorization = async (prisma, body, query) => {
   const { amount, pin, amountToPay } = body;
