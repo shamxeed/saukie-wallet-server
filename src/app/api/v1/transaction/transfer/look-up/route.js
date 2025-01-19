@@ -7,10 +7,10 @@ export const maxDuration = 30;
 
 export async function GET(req) {
   try {
-    const accountNumber = req.nextUrl.searchParams.get('accountNumber');
+    const accountId = req.nextUrl.searchParams.get('accountId');
 
     const user = await prismaEdge.user.findUnique({
-      where: { phone: accountNumber },
+      where: { id: Number(accountId) },
       select: { name: true },
     });
 
