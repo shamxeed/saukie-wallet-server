@@ -18,15 +18,15 @@ export async function POST(req) {
 
     const body = await req.json();
 
-    const { account, amount: the_amount } = body;
+    const { accountId, amount: the_amount } = body;
 
-    if (!body.account) {
+    if (!body.accountId) {
       return NextResponse.json({ msg: 'Bad request!' }, { status: 400 });
     }
 
     const query = prismaEdge.user.findUnique({
       select: { id: true },
-      where: { phone: account },
+      where: { id: Number(accountId) },
     });
 
     const params = { query, body, prisma: prismaEdge, isUser: true, myId };
@@ -43,9 +43,7 @@ export async function POST(req) {
     const note = `Cash Deposit was made to your account by cashier ${myId}`;
 
     const fundUserData = {
-      balance: {
-        increment: amount,
-      },
+      balance: { increment: amount },
       transactions: {
         create: {
           note,
@@ -62,7 +60,7 @@ export async function POST(req) {
     const data /* { transactions } */ = await prismaEdge.user.update({
       data: fundUserData,
       select: { id: true },
-      where: { phone: account },
+      where: { id: Number(accountId) },
       /* select: {
           transactions: {
             take: 1,
@@ -73,7 +71,7 @@ export async function POST(req) {
         }, */
     });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data, msg: 'Deposited Successfully!' });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
