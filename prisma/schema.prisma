@@ -18,7 +18,7 @@ model User {
   avatar            String?
   email             String        @unique
   nuban             String?       @unique
-  balance           Float         @default(0)
+  balance           Decimal       @default(0.00) @db.Money
   is_email_verified Boolean       @default(false)
   passcode          String        @default("")
   nin               String?       @unique
@@ -46,11 +46,12 @@ model Transaction {
   channel    String?
   type       String
   service    String?
-  refrence   String?  @unique
-  amount     Float
+  refrence   String?  @unique @default(ulid())
+  amount     Decimal  @default(0.00) @db.Money
   note       String?
-  created_at DateTime @default(now())
+  cashier_id Int?
   device     String?
+  created_at DateTime @default(now())
 
   @@index([user_id])
 }

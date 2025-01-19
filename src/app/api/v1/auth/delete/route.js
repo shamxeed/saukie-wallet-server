@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 
 import prisma from '@/server/prisma';
+import { decrypt } from '@/server/encryption';
 
 const api_response =
   'Your request to delete your account has been received successfully and will be deleted in the next 30 days.';
@@ -22,9 +22,9 @@ export async function POST(req) {
       );
     }
 
-    const isMatch = await bcrypt.compare(passcode, user.passcode);
+    const payload = await decrypt({ token: user.passcode });
 
-    if (!isMatch) {
+    if (payload.passcode !== passcode) {
       return NextResponse.json(
         { msg: 'Invalid details provided!' },
         { status: 401 }
