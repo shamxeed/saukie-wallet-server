@@ -21,6 +21,6 @@ export const getUserId = async () => {
     return { myId };
   } catch (err) {
     console.log('getUserId, jwt', err.message);
-    return { error };
+    return { error: [{ msg: 'Session Expired!' }, { status: 401 }] };
   }
 };
