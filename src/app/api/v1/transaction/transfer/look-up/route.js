@@ -11,7 +11,7 @@ export async function GET(req) {
 
     const user = await prismaEdge.user.findUnique({
       where: { id: Number(accountId) },
-      select: { name: true },
+      select: { name: true, balance: true },
     });
 
     if (!user) {
