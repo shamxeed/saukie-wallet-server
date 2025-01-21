@@ -53,11 +53,12 @@ export async function POST(req) {
       },
     };
 
-    const data = await prismaEdge.user.update({
+    const { balance, transactions } = await prismaEdge.user.update({
       data: fundUserData,
       select: { id: true },
       where: { id: myId },
       select: {
+        balance: true,
         transactions: {
           take: 1,
           orderBy: {
@@ -67,9 +68,13 @@ export async function POST(req) {
       },
     });
 
-    const transaction = data?.transactions?.[0];
+    const transaction = transactions?.[0];
 
-    return NextResponse.json({ transaction, msg: 'Transaction in progress!' });
+    return NextResponse.json({
+      balance,
+      transaction,
+      msg: 'Transaction in progress!',
+    });
   } catch (err) {
     console.log(err.message);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
