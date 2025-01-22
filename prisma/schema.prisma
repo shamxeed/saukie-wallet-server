@@ -25,6 +25,8 @@ model User {
   is_nin_verified   Boolean       @default(false)
   is_verified       String        @default("false")
   device            String?
+  created_by        Int?
+  updated_by        Int?
   pushToken         String?
   referred_by       String?
   created_at        DateTime      @default(now())

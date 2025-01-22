@@ -11,7 +11,9 @@ export async function POST(req) {
   const { passcode, role, balance, ...data } = body;
 
   try {
-    const { myId } = getUserId();
+    const { myId, error } = await getUserId();
+
+    if (error) return NextResponse.json(error[0], error[1]);
 
     const user = await prisma.user.findUnique({
       where: { id: myId },
