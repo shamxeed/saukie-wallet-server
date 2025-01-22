@@ -7,7 +7,7 @@ import { getUserId, isAuthorized } from '@/server/auth';
 export async function POST(req) {
   const body = await req.json();
 
-  const { accountId, passcode, role, balance, ...data } = body;
+  const { accountId, passcode, balance, ...data } = body;
 
   try {
     const { myId, error } = await getUserId();
